@@ -27,6 +27,7 @@ You can choose between a fun **fridge magnet-style** and a minimal **text layout
 cd ~/MagicMirror/modules
 git clone https://github.com/ChrisF1976/MMM-SmokeFree.git
 cd MMM-SmokeFree
+npm install
 ```
 
 ## 🛠️ Configuration
