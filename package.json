@@ -1,0 +1,21 @@
+{
+  "name": "MMM-SmokeFree",
+  "version": "1.0.0",
+  "description": "A MagicMirror² module that displays the number of smoke-free days and money saved since quitting smoking.",
+  "main": "MMM-SmokeFree.js",
+  "author": "ChrisF1976",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ChrisF1976/MMM-SmokeFree"
+  },
+  "keywords": [
+    "smoke-free",
+    "health",
+    "motivation"
+  ],
+  "bugs": {
+    "url": "https://github.com/ChrisF1976E/MMM-SmokeFree/issues"
+  },
+  "homepage": "https://github.com/ChrisF1976/MMM-SmokeFree#readme"
+}
