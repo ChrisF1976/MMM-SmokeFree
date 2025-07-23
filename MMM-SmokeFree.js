@@ -1,43 +1,58 @@
 Module.register("MMM-SmokeFree", {
   defaults: {
-    startDate: "2024-12-01",
+    startDate: "2025-06-24",
+    
     cigarettesPerDay: 20,
-    pricePerPack: 8.0,
+    pricePerPack: 9.0,
     cigarettesPerPack: 20,
     updateInterval: 60 * 60 * 1000, // 1 Stunde
+    
+    style: "magnet", // or "simple"
+    
+    currency: "€", // or "$", "£", etc.
+    currencyIcon: "mdi:currency-eur", // Icons: https://icon-sets.iconify.design/
+    
     motivationalText: true,
-    style: "magnet" // oder "simple"
+    
+    showMilestone: true,
+    milestoneAmount: 500,
   },
 
-  motivationalPhrases: {
-    de: [
-      "Jede Zigarette, die du nicht rauchst, ist ein Sieg!",
-      "Du atmest Freiheit ein!",
-      "Deine Lunge dankt dir!",
-      "Bleib stark, du schaffst das!",
-      "1000€ sind näher als du denkst!"
-    ],
-    en: [
-      "Every cigarette you don't smoke is a victory!",
-      "You're breathing freedom!",
-      "Your lungs thank you!",
-      "Stay strong, you got this!",
-      "1000€ is closer than you think!"
-    ],
-    fr: [
-      "Chaque cigarette non fumée est une victoire !",
-      "Tu respires la liberté !",
-      "Tes poumons te remercient !",
-      "Reste fort, tu peux le faire !",
-      "1000€ sont plus proches que tu ne le penses !"
-    ],
-    nl: [
-      "Elke sigaret die je niet rookt is een overwinning!",
-      "Je ademt vrijheid!",
-      "Je longen danken je!",
-      "Blijf sterk, je kunt het!",
-      "1000€ is dichterbij dan je denkt!"
-    ]
+  loadedTranslations: {},
+
+  getTranslations: function () {
+    return {
+      de: "translations/de.json",
+      en: "translations/en.json",
+      fr: "translations/fr.json",
+      nl: "translations/nl.json"
+    };
+  },
+
+  translate: function (key, locale) {
+    const translations = this.loadedTranslations[locale] || {};
+    return translations[key] || key;
+  },
+
+  getMotivationalPhrase: function (locale) {
+    const translations = this.loadedTranslations[locale] || {};
+    const phrases = translations["motivationalPhrases"] || [];
+    if (phrases.length === 0) return "";
+    return phrases[Math.floor(Math.random() * phrases.length)];
+  },
+
+  loaded: function (callback) {
+    const locale = this.getLocale();
+    const path = this.getTranslations()[locale] || this.getTranslations().en;
+    const self = this;
+
+    fetch(`/modules/${this.name}/${path}`)
+      .then(res => res.json())
+      .then(data => {
+        self.loadedTranslations[locale] = data;
+        callback();
+      })
+      .catch(() => callback());
   },
 
   getLocale: function () {
@@ -47,11 +62,12 @@ Module.register("MMM-SmokeFree", {
   },
 
   start: function () {
-    this.updateDom();
-    var self = this;
-    setInterval(function () {
-      self.updateDom();
-    }, this.config.updateInterval);
+    this.loaded(() => {
+      this.updateDom();
+      setInterval(() => {
+        this.updateDom();
+      }, this.config.updateInterval);
+    });
   },
 
   getStyles: function () {
@@ -84,7 +100,8 @@ Module.register("MMM-SmokeFree", {
     const totalPacks = totalCigarettes / this.config.cigarettesPerPack;
     const savedMoney = totalPacks * this.config.pricePerPack;
 
-    const nextMilestone = Math.max(0, Math.ceil((1000 - savedMoney) / (this.config.pricePerPack / this.config.cigarettesPerPack * this.config.cigarettesPerDay)));
+    const milestoneAmount = this.config.milestoneAmount;
+    const nextMilestone = Math.max(0, Math.ceil((milestoneAmount - savedMoney) / (this.config.pricePerPack / this.config.cigarettesPerPack * this.config.cigarettesPerDay)));
 
     const locale = this.getLocale();
 
@@ -100,66 +117,25 @@ Module.register("MMM-SmokeFree", {
 
     const money = document.createElement("div");
     money.className = "smokefree-money";
-    money.innerHTML = `<iconify-icon icon="mdi:currency-eur"></iconify-icon> ${this.translate("saved", locale)}: ${savedMoney.toFixed(2)} €`;
+    money.innerHTML = `<iconify-icon icon="${this.config.currencyIcon}"></iconify-icon> ${this.translate("saved", locale)}: ${savedMoney.toFixed(2)} ${this.config.currency}`;
     container.appendChild(money);
 
-    const milestone = document.createElement("div");
-    milestone.className = "smokefree-milestone";
-    milestone.innerHTML = `<iconify-icon icon="mdi:target"></iconify-icon> ${this.translate("nextMilestone", locale)}: 1000 € ${this.translate("inAbout", locale)} ${nextMilestone} ${this.translate("days", locale)}`;
-    container.appendChild(milestone);
+    if (this.config.showMilestone) {
+      const milestone = document.createElement("div");
+      milestone.className = "smokefree-milestone";
+      milestone.innerHTML = `<iconify-icon icon="mdi:target"></iconify-icon> ${this.translate("nextMilestone", locale)}: ${milestoneAmount} ${this.config.currency} ${this.translate("inAbout", locale)} ${nextMilestone} ${this.translate("days", locale)}`;
+      container.appendChild(milestone);
+    }
 
     if (this.config.motivationalText) {
       const motiv = document.createElement("div");
       motiv.className = "smokefree-motivation";
-      const phrases = this.motivationalPhrases[locale] || this.motivationalPhrases.en;
-      const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+      const phrase = this.getMotivationalPhrase(locale);
       motiv.innerHTML = `<iconify-icon icon='mdi:comment-quote'></iconify-icon> ${phrase}`;
       container.appendChild(motiv);
     }
 
     wrapper.appendChild(container);
     return wrapper;
-  },
-
-  translate: function (key, locale) {
-    const translations = {
-      smokeFreeSince: {
-        de: "Rauchfrei seit",
-        en: "Smoke-free since",
-        fr: "Sans tabac depuis",
-        nl: "Rookvrij sinds"
-      },
-      daysSmokeFree: {
-        de: "Tage rauchfrei",
-        en: "days smoke-free",
-        fr: "jours sans tabac",
-        nl: "dagen rookvrij"
-      },
-      saved: {
-        de: "Erspart",
-        en: "Saved",
-        fr: "Économisé",
-        nl: "Bespaar"
-      },
-      nextMilestone: {
-        de: "Nächster Meilenstein",
-        en: "Next milestone",
-        fr: "Prochaine étape",
-        nl: "Volgende mijlpaal"
-      },
-      inAbout: {
-        de: "in ca.",
-        en: "in about",
-        fr: "dans environ",
-        nl: "over ongeveer"
-      },
-      days: {
-        de: "Tagen",
-        en: "days",
-        fr: "jours",
-        nl: "dagen"
-      }
-    };
-    return (translations[key] && translations[key][locale]) || translations[key].en;
   }
 });
