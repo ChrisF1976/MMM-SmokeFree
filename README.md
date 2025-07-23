@@ -30,6 +30,14 @@ cd MMM-SmokeFree
 npm install
 ```
 
+## ⚙️ Update
+
+```bash
+cd ~/MagicMirror/modules/MMM-SmokeFree
+git pull
+npm install
+```
+
 ## 🛠️ Configuration
 Add the module to your config.js:
 ```js
