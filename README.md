@@ -42,7 +42,15 @@ Add the module to your config.js:
     pricePerPack: 8.0,           // price of one pack in EUR
     cigarettesPerPack: 20,       // cigarettes per pack
     motivationalText: true,      // show motivational quotes?
-    style: "magnet",              // choose between "magnet" or "simple"
+    style: "magnet",             // choose between "magnet" or "simple"
+
+    currency: "€",               // or "$", "£", etc.
+    currencyIcon: "mdi:currency-eur", // Icons: https://icon-sets.iconify.design/
+    
+    motivationalText: true,      // activate or deactivate this text line. Use true/false.
+    
+    showMilestone: true,         // activate or deactivate this text line. Use true/false.
+    milestoneAmount: 500,        // adjust the amount in the config now.
   }
 },
 ```
